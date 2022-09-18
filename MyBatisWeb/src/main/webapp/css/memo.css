@@ -1,0 +1,51 @@
+@charset "UTF-8";
+	body{
+		font-family: verdana, sans-serif;
+		color:navy;
+	}
+	div#memo_wrap {
+	width: 80%;
+	margin: 2rem auto;
+	}
+
+	h1 {
+		text-align: center;
+	}
+
+	#memoTable {
+		width: 90%;
+		margin: auto;
+		border: 1px solid silver;
+	}
+
+	#memoTable th, td{
+		padding: .8rem;
+	}
+	#memoTable .m1{
+		background-color:#abc;
+		color:navy;
+		width:20%;
+	}
+	#memoTable .m2{
+		background-color:#abc;
+		color:navy;		
+	}
+	#memoTable .m3{
+		border-bottom:1px dotted navy;
+	}
+	#memoTable input.box{
+		padding: 6px;
+		border: 1px solid silver;
+	}
+	#memoTable input.box.sm{
+		width: 50%;
+	}
+	#memoTable input.box.lg{
+		width: 90%;
+	}
+	#memoTable .btn{
+		padding: 5px;
+		border: 1px solid silver;
+		border-radius: 3px;
+		background-color:beige;
+	}

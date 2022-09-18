@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<!--  
+	#파일 업로드시 주의사항
+	[1]파일을 서버에 업로드시키려면 form method방식은 반드시 post로 주어야 함 
+	[2]post방식일 경우 인코딩방식(enctype)이 2가지가 있는데
+		(1) application/x-www-form-urlencoded (디폴트)
+			=> 이 경우는 첨부된 파일이름만 서버에 전송된다.
+			
+		(2) multipart/form-data 
+		이 중 파일업로드를 하려면 (2) multipart/form-data 로 지정해야 한다.
+		    => 파일 이름과 함께 파일 데이터가 서버에 전송된다.
+		    
+-->
+	<div id="panel">
+		<h1>파일 업로드 Form 2</h1>
+		<form name="fileF" action="../fileForm2.ict" method="post"
+		 enctype="multipart/form-data">
+			<table class="table">
+				<tr>
+					<td>올린이</td>
+					<td>
+					<input type="text" name="name">
+					</td>
+				</tr>
+				<tr>
+					<td>첨부파일1</td>
+					<td>
+					<input type="file" name="filename">
+					</td>
+				</tr>		
+				<tr>
+					<td colspan="2">
+						<button>업로드</button>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+
+</body>
+</html>

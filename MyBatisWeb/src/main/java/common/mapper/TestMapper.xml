@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="common.mapper.TestMapper">
+ 	<select id="getTotalCount" resultType="string">
+ 		<!-- select count(*) from tab -->
+ 		select * from test_enter
+ 	</select>
+ 	<!-- common.mapper.TestMapper.getTotalCount식으로 접근 -->
+</mapper>

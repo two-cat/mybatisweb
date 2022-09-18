@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="common.mapper.BoardMapper">
+	<sql id="findWhere">
+		<if test="findType!=null and findKeyword !=''">
+ 			<where>
+ 				<if test="findType==1"><!-- 제목 -->
+ 					subject like '%'||#{findKeyword}||'%'
+ 				</if>
+ 				<if test="findType==2"><!-- 작성자 -->
+ 					name like '%'||#{findKeyword}||'%'
+ 				</if>
+ 				<if test="findType==3">
+ 					content like '%'||#{findKeyword}||'%'
+ 				</if>
+ 			</where>
+ 		</if>
+	</sql>
+
+
+ 	<select id="getTotalCount" resultType="_int" parameterType="map">
+ 		select count(*) from jsp_board
+ 		<include refid="findWhere"/>
+ 	</select>
+ 	<!-- [1] 게시판 글쓰기 
+ 	insert/update/delete문일 때는 parameterType을 지정한다.
+ 	select문일 때는  [parameterType], resultType[필수지정]을 지정한다
+ 	-->
+ 	<insert id="insertBoard" parameterType="Board">
+ 		<selectKey keyProperty="idx" resultType="_int" order="BEFORE">
+ 			select jsp_board_seq.nextval from dual
+ 		</selectKey>
+ 		insert into jsp_board(idx,name,subject,content,readnum,wdate, filename, filesize)
+ 		values(#{idx}, #{name}, #{subject}, #{content:VARCHAR}, 
+ 		0, sysdate, #{filename:VARCHAR}, #{filesize:NUMERIC})
+ 	</insert>
+ 	
+ 	<insert id="insertBoard_old" parameterType="board.model.BoardVO">
+ 		insert into jsp_board(idx,name,subject,content,readnum,wdate, filename, filesize)
+ 		values(jsp_board_seq.nextval, #{name}, #{subject}, #{content:VARCHAR}, 
+ 		0, sysdate, #{filename:VARCHAR}, #{filesize:NUMERIC})
+ 		<!-- #{name} ==> BoardVO의 getName()을 호출해서 해당 값을 '홍길동' 식으로 넣어줌 
+ 			content의 경우 null값이 들어오면 어떤 유형으로 처리할지  jdbcType을 기술해주자.
+ 			CHAR, VARCHAR2==> VARCHAR
+ 			NUMBER ==> NUMERIC
+ 		-->
+ 	</insert>
+ 	
+ 	<!-- [2] 페이징 처리 및 jsp_board_view 이용 -->
+ 	<select id="listBoard" resultType="Board" parameterType="map">
+ 	select * from (
+		select rownum rn, a.* from jsp_board_view a
+			<include refid="findWhere"/>
+		)
+		where rn between #{start} and #{end}
+ 	</select>
+ 	
+ 	
+ 	<!-- [2]페이징 처리하기 전[글 목록과 댓글수 가져오기] -->
+ 	<select id="listBoard_old" resultType="Board">
+ 		<!-- select * from jsp_board order by idx desc -->
+ 		select bbs.*, 
+		(select count(re_idx) from jsp_reply where idx_fk = bbs.idx) re_cnt
+		from jsp_board bbs
+		order by idx desc
+ 	</select>
+ 	
+ 	
+ 	<!-- [3_1] 조회수 증가 -->
+ 	<update id="updateReadnum" parameterType="_int">
+ 		update jsp_board set readnum = readnum+1 where idx =#{value}
+ 	</update>
+ 	
+ 	<!-- [3_2] 글 내용 가져오기 -->
+ 	<select id="selectBoardByIdx" parameterType="_int" resultType="Board">
+ 		select * from jsp_board where idx =#{idx}
+ 	</select>
+ 	<!-- [4_0] 부모글에 대한 댓글수 가져오기 -->
+ 	<select id="getReplyCountByIdx" parameterType="_int" resultType="_int">
+ 		select count(re_idx) from jsp_reply where idx_fk=#{value}
+ 	</select>
+ 	
+ 	<!-- [4_1] 부모글 삭제 전에 댓글 먼저 삭제 -->
+ 	<delete id="deleteReplyAllByIdx" parameterType="_int">
+ 		delete from jsp_reply where idx_fk=#{value}
+ 	</delete>
+ 	
+ 	<!-- [4_2] 글 삭제 --> 
+ 	<delete id="deleteBoard" parameterType="_int">
+ 		delete from jsp_board where idx =#{value}
+ 	</delete>
+ 	
+ 	<!-- [5] 글 수정 -->
+ 	<update id="updateBoard" parameterType="Board">
+ 		update jsp_board set name=#{name}, subject=#{subject}, 
+ 		content=#{content:VARCHAR} 		
+ 		<!-- 첨부파일이 있다면 아래 sql문을 실행하라는 의미 -->
+ 		<if test="filename!=null and filename!=''">
+ 		, filename=#{filename}, filesize=#{filesize}
+ 		</if>
+ 		where idx =#{idx}
+ 	</update>
+ 	
+ 	<!-- [6] 댓글 달기========================= -->
+ 	<insert id="insertReply" parameterType="Reply">
+ 		<selectKey keyProperty="re_idx" resultType="_int" order="BEFORE">
+ 			select jsp_reply_seq.nextval from dual
+ 		</selectKey>
+ 		<!-- insert문을 수행하기 전에 시퀀스(jsp_reply_seq)를 증가시켜서 그 결과값을 ReplyVO
+ 		    의 setRe_idx()메소드에 전달한다 -->
+ 		insert into jsp_reply(re_idx, re_name, 
+ 				re_content,re_readnum, re_date, idx_fk)
+ 		values(#{re_idx},#{re_name}, #{re_content:VARCHAR},
+ 				0, sysdate, #{idx_fk})	
+ 	</insert>
+ 	
+ 	<insert id="insertReply_old" parameterType="reply.model.ReplyVO">
+ 		insert into jsp_reply(re_idx, re_name, 
+ 				re_content,re_readnum, re_date, idx_fk)
+ 		values(jsp_reply_seq.nextval,#{re_name}, #{re_content:VARCHAR},
+ 				0, sysdate, #{idx_fk}) 				
+ 	</insert>
+ 	<!-- [7] 댓글 목록 가져오기 -->
+ 	<select id="listReply" parameterType="_int" resultType="Reply">
+ 		select * from jsp_reply where idx_fk=#{value}
+ 	</select>
+ 	<!-- [8] 댓글 삭제하기 -->
+ 	<delete id="deleteReply" parameterType="_int">
+ 		delete from jsp_reply where re_idx=#{value}
+ 	</delete>
+ 	
+</mapper>
+
+
+
