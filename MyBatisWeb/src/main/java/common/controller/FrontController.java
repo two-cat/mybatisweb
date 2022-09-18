@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 		urlPatterns = { "*.ict" }, 
 		initParams = { 
 				@WebInitParam(name = "config", 
-						value = "C:\\spring\\MyBatisWeb\\src\\main\\webapp\\WEB-INF\\Command.properties")
+						value = "C:\\Users\\±è¿¹¸°\\git\\mybatisweb\\MyBatisWeb\\src\\main\\webapp\\WEB-INF\\Command.properties")
 		})
 public class FrontController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
